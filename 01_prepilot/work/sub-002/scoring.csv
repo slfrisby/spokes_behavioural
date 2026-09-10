@@ -1,0 +1,100 @@
+accordion,accordion,1,0
+aeroplane,aeroplane,1,0
+ambulance,siren,0,0
+bagpipes,bagpipes,1,0
+bee,bee,1,0
+bell,church bells,1,0
+bin_lorry,don't know,0,4
+bottle,wine bottle cork,1,0
+bus,bus,1,0
+camera,shuffling cards,0,2
+can,a person opening a canned drink,1,0
+car,car horn,1,0
+cat,cat,1,0
+chicken,cockerel,1,0
+chimpanzee,chimpanzee,1,0
+clap,person clapping,1,0
+clock,cuckoo clock,1,0
+cockerel,cockerel,1,0
+computer,person typing on keyboard,1,0
+cough,person coughing,1,0
+cow,cow mooing,1,0
+cricket,crickets,1,0
+crow,a bird - maybe crow?,1,0
+cry,person crying,1,0
+cymbals,cymbols,1,0
+dog,dog,1,0
+donkey,donkey,1,0
+door,creaky door,1,0
+doorbell,doorbell,1,0
+drill,power drill,1,0
+drums,drum kit,1,0
+duck,ducks,1,0
+elephant,giraffe,0,3
+fire,fire,1,0
+fireworks,fireworks,1,0
+frog,frog,1,0
+gasp,person gasping,1,0
+guitar,guitar,1,0
+gun,gunshot,1,0
+hairdryer,hair dryer,1,0
+hammer,person hammering nail,1,0
+helicopter,helicopter,1,0
+hoover,hoover,1,0
+horse,horses hooves,1,0
+ice_cream_van,icecream van,1,0
+kettle,boiling kettle or saucepan,1,0
+laugh,person laughing,1,0
+lion,lion roar,1,0
+lorry,vehicle reversing,1,0
+maraca,maracas,1,0
+match,lighting match,1,0
+microwave,a microwave,1,0
+motorbike,motorbike,1,0
+mouse,don't know,0,0
+organ,organ,1,0
+owl,owl,1,0
+phone,old telephone ringing,1,0
+piano,piano,1,0
+pig,hippo,0,2
+pigeon,wood pigeon,1,0
+plughole,plug hole,1,0
+printer,printer,1,0
+recorder,recorder,1,0
+river,stream,1,0
+saw,a person sawing wood,1,0
+scissors,don't know,0,3
+scream,person screaming,1,0
+seagull,gull,1,0
+seal,hippo,0,3
+seatbelt,don't know,0,3
+sheep,sheep,1,0
+ship,ship's horn,1,0
+skittles,ten pin bowling,1,0
+snake,a snake,1,0
+sneeze,person sneezing,1,0
+sniff,person sniffing,1,0
+snore,a person snoring,1,0
+storm,thunder,1,0
+tambourine,tambourine,1,0
+tap,don't know,0,3
+tape,sellotape,1,0
+till,till,1,0
+toaster,stapler,0,3
+toilet,toilet flushing,1,0
+toothbrush,cutting,0,5
+train,train,1,0
+trumpet,bugle,1,0
+turkey,hens,0,3
+violin,violin,1,0
+walk,a person walking on a hard floor,1,0
+washing_machine,printer,0,3
+wave,waves crashing,1,0
+whale,tube train,0,5
+whistle,whistle,1,0
+wind,wind,1,0
+wolf,wolf,1,0
+woodpecker,woodpecker,1,0
+xylophone,xylophone,1,0
+yawn,person yawning,1,0
+zip,zipping up,1,0

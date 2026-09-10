@@ -1,0 +1,100 @@
+accordion,Accordion,1,0
+aeroplane,Plane ,1,0
+ambulance,Car siren (ambulance or police car),0,0
+bagpipes,Bag pipe,1,0
+bee,Bee,1,0
+bell,Church bells,1,0
+bin_lorry,Don't  know,0,4
+bottle,Drops of water dripping into a big resonating container,0,2
+bus,Don't know,0,2
+camera,Don't know,0,5
+can,Can of soda being opened,1,0
+car,Car horn,1,0
+cat,Cat,1,0
+chicken,Chicken ,1,0
+chimpanzee,Monkey,1,0
+clap,Wooden material being knocked together,0,2
+clock,Cuckoo clock,1,0
+cockerel,Rooster,1,0
+computer,Typing on a keyboard,1,0
+cough,Cough,1,0
+cow,Cow,1,0
+cricket,Cricket,1,0
+crow,Crow,1,0
+cry,Crying,1,0
+cymbals,Cymbals,1,0
+dog,Dog,1,0
+donkey,Donkey,1,0
+door,Door opening,1,0
+doorbell,Doorbell,1,0
+drill,"Something winding up and down, could be confused for a blow dryer of vacuum cleaner, but I don't think that is it",0,5
+drums,Drumset,1,0
+duck,Duck (didn't sound right),1,0
+elephant,Trumpet or weird elephant,0,2
+fire,Water dripping,0,3
+fireworks,Fireworks,1,0
+frog,Frog,1,0
+gasp,Surprise,1,0
+guitar,Guitar,1,0
+gun,Gun shot,1,0
+hairdryer,Hair dryer,1,0
+hammer,Hammering a nail,1,0
+helicopter,Helicopter,1,0
+hoover,Vacuum cleaner,1,0
+horse,Horse,1,0
+ice_cream_van,Opening sound of an announcement system,0,2
+kettle,Maybe some sort of engine?,0,5
+laugh,Person laughing,1,0
+lion,Roaring lion,1,0
+lorry,Truck backing up,1,0
+maraca,Rattle,1,0
+match,Match,1,0
+microwave,Microwave,1,3
+motorbike,Motorcycle,1,0
+mouse,Small bird maybe,0,3
+organ,Organ,1,0
+owl,Owl,1,0
+phone,Phone ringing,1,0
+piano,Piano,1,0
+pig,Pig,1,0
+pigeon,Owl hooting,0,5
+plughole,Toilet,0,3
+printer,Printer,1,0
+recorder,Flute,0,0
+river,"Water running, maybe a river?",1,0
+saw,Saw,1,0
+scissors,Scissors,1,0
+scream,Scream,1,0
+seagull,Seagull,1,0
+seal,Goose,0,5
+seatbelt,Maybe something being open and another thing being put into it,0,5
+sheep,Sheep,1,0
+ship,"Fog horn, ship",1,0
+skittles,Bowling,1,0
+snake,Rattle,0,3
+sneeze,Sneeze,1,0
+sniff,Nose blowing,1,3
+snore,Snoring,1,0
+storm,Rain storm,1,3
+tambourine,Jingle bells,0,3
+tap,Water running,0,0
+tape,Don't know ,0,5
+till,Cash register,1,0
+toaster,No clue,0,5
+toilet,Toilet flushing,1,0
+toothbrush,Don't know,0,2
+train,Train,1,0
+trumpet,Trumpet,1,0
+turkey,"Not sure, chicken? ",0,5
+violin,Violin,1,0
+walk,Person stepping in shoes,1,0
+washing_machine,Train maybe (very unsure),0,4
+wave,Ocean,1,0
+whale,Something powering down,0,5
+whistle,Whistle,1,0
+wind,Wind,1,0
+wolf,Wolf,1,0
+woodpecker,Woodpecker,1,0
+xylophone,Xylophone ,1,0
+yawn,Yawn,1,0
+zip,Zipper,1,0

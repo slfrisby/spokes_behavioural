@@ -1,7 +1,0 @@
-[submodule "dependencies/WISC_MVPA"]
-	path = dependencies/WISC_MVPA
-	url = https://github.com/crcox/WISC_MVPA.git
-[submodule "dependencies/tripletTools"]
-	path = dependencies/tripletTools
-	url = https://github.com/Knowledge-and-Concepts-Lab/tripletTools.git
-

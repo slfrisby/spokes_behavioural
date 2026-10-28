@@ -108,8 +108,7 @@ data <- data.frame(
   Right     = choices_split[, 2],
   Answer    = data$winner,
   sampleAlg = data$trial_category
-) |> 
-  tripletTools::assign_sample_sets()
+) 
 
 # split the data into visual and auditory, then assign trials to train and test sets
 image_data <- data |> 

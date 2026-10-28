@@ -4,9 +4,4 @@
 [submodule "dependencies/tripletTools"]
 	path = dependencies/tripletTools
 	url = https://github.com/Knowledge-and-Concepts-Lab/tripletTools.git
-[submodule "dependencies/dependencies/WISC_MVPA"]
-	path = dependencies/dependencies/WISC_MVPA
-	url = https://github.com/crcox/WISC_MVPA.git
-[submodule "dependencies/dependencies/tripletTools"]
-	path = dependencies/dependencies/tripletTools
-	url = https://github.com/Knowledge-and-Concepts-Lab/tripletTools.git
+

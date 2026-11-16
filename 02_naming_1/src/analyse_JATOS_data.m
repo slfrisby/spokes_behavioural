@@ -62,6 +62,8 @@ stimuliNamedAccuratelyEnough = stimuli(tmp(:,1) >= 0.85);
 stimuliToQuery = stimuli(tmp(:,1) < 0.85 & tmp(:,2) >= 0.85);
 stimuliNotNamedAccuratelyEnough = stimuli(tmp(:,2) < 0.85);
 
+
+
 % % Find the same statistic for just the British participants.
 % britishIndex = contains(demographics.country,'I was born and grew up in the UK');
 % tmp = accuracy(:,britishIndex);

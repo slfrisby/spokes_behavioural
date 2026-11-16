@@ -22,7 +22,7 @@ for a = 1:length(audioFiles)
     [data, samplingRate] = audioread([root, '/src/audio/', audioFiles{a}]);
 
     % truncate data to all be the same length ("flute" is very slightly
-    % longer than the others
+    % longer than the others)
     data = data(1:192000,1);
 
     % store filename
@@ -37,25 +37,30 @@ for a = 1:length(audioFiles)
 
 end
 
-% compute RSM by calculating elementwise correlations between the
-% modulation spectra (not sure whether this is the best approach, but it
-% works for now!).
+% the resulting matrix is massive. Conduct an SVD (a "full" SVD, without 
+% specifying the number of components, explains 100% of the variance. 
 
-RSM = zeros(length(audioFiles),length(audioFiles));
+% mean-centre the features first
+m = mean(features, 1);
+features = features - m;
 
-for r = 1:length(audioFiles)
-    for c = 1:length(audioFiles)
-        RSM(r,c) = corr2(spectra(r).modulationSpectrum, spectra(c).modulationSpectrum);
-    end
-end
+% then do the SVD. "econ" excludes zeros and makes the computation far
+% faster while preserving all the necessary information. 
+[C, z, ~] = svd(features, "econ");
+z = diag(z);
 
-% convert RSM to embedding
-[C,z] = embed_similarity_matrix(RSM,4);
+% rescale, just as we do for usual RSL
 U = rescale_embedding(C,z);
 
+% inspect percentage variance explained by each component
+varianceExplained = 100 * z.^2 / sum(z.^2);
+cumulativeVariance = cumsum(varianceExplained);
+plot(cumulativeVariance, 'o-');
+xlabel('Component');
+ylabel('Cumulative % variance');
+
 % save outputs
-writematrix(RSM,[root,'/work/sound_model_RSM.txt'])
-writematrix(U,[root,'/work/sound_model_embedding.txt'])
+writematrix(U, [root,'/work/sound_model_features.txt'])
 
 
 

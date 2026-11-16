@@ -1,11 +1,339 @@
 # compares embeddings (and RSMs) from models and from triplet judgements.
 
+# Setup -------------------------------------------------------------------
 
-# Load all embeddings -----------------------------------------------------
+# set libraries
+library(tripletTools)
+library(imager)
 
-image_model_embedding <- read.csv('./work/image_model_embedding.txt', header = FALSE)
-image_triplet_embedding <- read.csv('./work/image_triplet_embedding.txt', header = FALSE)
-sound_model_embedding <- read.csv('./work/sound_model_embedding.txt', header = FALSE)
-sound_triplet_embedding <- read.csv('./work/sound_triplet_embedding.txt', header = FALSE)
+# set filename variables
+input_directory <- "derivatives"
+input_triplet_filename <- "tidy_triplets"
 
-# ca
+# Load all data -----------------------------------------------------
+
+embeddings <- list()
+embeddings$image_model_embedding <- read.csv('./work/image_model_features.txt', header = FALSE)
+embeddings$image_triplet_embedding <- read.csv('./work/image_triplet_embedding.txt', header = FALSE)
+embeddings$sound_model_embedding <- read.csv('./work/sound_model_features.txt', header = FALSE)
+embeddings$sound_triplet_embedding <- read.csv('./work/sound_triplet_embedding.txt', header = FALSE)
+
+# load stimuli names as a character vector
+stimuli <- readLines('./src/stimuli.csv')
+
+# convert to data frames
+
+for (e in c(1:4)){
+  embeddings[[e]] <- as.data.frame(embeddings[[e]], row.names = stimuli)
+  
+  # then load triplet data
+    
+  # load image data
+  image_data <- read.csv(paste(input_directory, "/", input_triplet_filename, "_image.csv", sep = ""))
+  # reformat it into a nested list with one data frame per participant
+  image_data <- split(image_data, image_data$worker_id)
+  
+  # do the same with sound data
+  sound_data <- read.csv(paste(input_directory, "/", input_triplet_filename, "_sound.csv", sep = ""))
+  # reformat it into a nested list with one data frame per participant
+  sound_data <- split(sound_data, sound_data$worker_id)
+  
+  # set all validation trials to be in the test set
+  for (i in c(1:length(image_data))){
+    image_data[[i]]$sampleSet[image_data[[i]]$sampleAlg == "validation"] <- "test"
+  }
+  for (i in c(1:length(sound_data))){
+    sound_data[[i]]$sampleSet[sound_data[[i]]$sampleAlg == "validation"] <- "test"
+  }
+}
+
+# Load images for visualisation -------------------------------------------
+
+# initialise a list to store stimuli
+image_stimuli <- list()
+# get list of images
+image_list <- list.files('src/img/')
+# load each one
+for (i in c(1:length(image_list))){
+  image_stimuli[[i]] <- load.image(paste('src/img/', image_list[i], sep = ""))
+}
+
+# Test 1: Do the RSMs correlate? ------------------------------------------
+
+# initialise RSMs
+RSM <- list()
+RSM$image_model_RSM <- matrix(0, dim(embeddings$image_model_embedding)[1], dim(embeddings$image_model_embedding)[1])
+RSM$image_triplet_RSM <- matrix(0, dim(embeddings$image_model_embedding)[1], dim(embeddings$image_model_embedding)[1])
+RSM$sound_model_RSM <- matrix(0, dim(embeddings$image_model_embedding)[1], dim(embeddings$image_model_embedding)[1])
+RSM$sound_triplet_RSM <- matrix(0, dim(embeddings$image_model_embedding)[1], dim(embeddings$image_model_embedding)[1])
+
+# get a lower triangle filter (applying this to each RSM will get just the lower triangle, which can then be correlated)
+lt <- lower.tri(RSM$image_model_RSM)
+
+# calculate RSMs
+for (r in c(1:dim(embeddings$image_model_embedding)[1])){
+  for (c in c(1:dim(embeddings$image_model_embedding)[1])){
+    RSM$image_model_RSM[r,c] <- cor(as.numeric(embeddings$image_model_embedding[r,]),as.numeric(embeddings$image_model_embedding[c,]))
+    RSM$image_triplet_RSM[r,c] <- cor(as.numeric(embeddings$image_triplet_embedding[r,]),as.numeric(embeddings$image_triplet_embedding[c,]))
+    RSM$sound_model_RSM[r,c] <- cor(as.numeric(embeddings$sound_model_embedding[r,]),as.numeric(embeddings$sound_model_embedding[c,]))
+    RSM$sound_triplet_RSM[r,c] <- cor(as.numeric(embeddings$sound_triplet_embedding[r,]),as.numeric(embeddings$sound_triplet_embedding[c,]))
+  }
+}
+
+# calculate all the correlations
+all_correlations <- matrix(0,4,4)
+for (r in c(1:4)){
+  for (c in c(1:4)){
+    all_correlations[r,c] <- cor(RSM[[r]][lt], RSM[[c]][lt])
+  }
+}
+all_correlations
+
+# plot (reversing the y-axis orients the image in a normal RSM way)
+image(all_correlations[,4:1], zlim = c(0,1))
+
+# Summary of results:
+# - the two semantic RSMs correlate reasonably but not perfectly with one another.
+# - the sound model RSM hardly correlates with any of the others.
+# - the visual model correlates weakly with the two semantic RSMs. 
+
+# Test 2: compare embeddings with Procrustes ------------------------------
+
+# calculate Procrustes 
+tmp <- get.rep.dist(embeddings, metric = "corr_dist")
+all_procrustes_correlations <- 1 - tmp
+
+# because the embeddings are different dimensionalities, it is difficult to know
+# what counts as a "good" match. Therefore, we need to calculate how good the 
+# correlation could possibly be. 
+ceiling <- matrix(0,4,4)
+for (r in c(1:4)){
+  for (c in c(1:4)){
+    ceiling[r,c] <- procrustes_spectral_ceiling(embeddings[[r]], embeddings[[c]])
+  }
+}
+
+# show correlations as a fraction of the possible correlation
+all_procrustes_correlations / ceiling
+tmp <- all_procrustes_correlations / ceiling
+image(tmp[,4:1], zlim = c(0,1))
+
+# Summary of results:
+# - everything correlates quite a lot with everything else. 
+# - interestingly, the low-level vision and sound models correlate a lot. 
+# - both sets of triplets correlate better with the vision model than with each other.
+
+# Test 3: Find which items are placed most differently on each embedding --
+
+# initialise
+discrepant_items <- list()
+
+# for each pair of embeddings, get the list of which items distinguish best between the spaces
+for (r in c(1:4)){
+  discrepant_items[[r]] <- list()
+  for (c in c(1:4)){
+    discrepant_items[[r]][[c]]<- find_discrepant_items(embeddings[[r]], embeddings[[c]])
+  }
+}
+
+# find out how many items are distinctive in each case
+n_discrepant_items <- matrix(0,4,4)
+for (r in c(1:4)){
+  for (c in c(1:4)){
+    # a negative value, or one close to zero, indicates that the item's position is unrelated between the two spaces
+    n_discrepant_items[r,c] <- sum(discrepant_items[[r]][[c]][,2] < 0.1)
+  }
+}
+n_discrepant_items
+
+# Summary of results:
+# - there are no items that really distinguish THE IMAGE MODEL FROM THE SOUND MODEL (this I find surprising, but aligns with the Procrustes result).
+# - there are ~20 items that distinguish the low-level vision model from the triplet vision model, and about ~40 that distinguish it from the triplet sound model
+# - there are 10 triplets that distinguish the semantic models from each other. We can consider these for axing.
+
+# how "distinguishing" is each item overall? 
+score <- rep(0,65)
+overall_discrepant_items <- as.data.frame(score, row.names = stimuli)
+
+# make a lower triangle filter, which will be needed later
+lt <- lower.tri(matrix(0,4,4))
+
+# for each item
+for (i in c(1:65)){
+  
+  # make a matrix. A 1 in any cell means that it distinguishes between those embeddings.
+  d <- matrix(0,4,4)
+  
+  # for each cell of the matrix
+  for (r in c(1:4)){
+    for (c in c(1:4)){
+      
+      # get the item's score
+      score <- discrepant_items[[r]][[c]][discrepant_items[[r]][[c]]$item == stimuli[i],2]
+      # ask whether the item distinguishes those two embeddings.
+      # a negative value, or one close to zero, indicates that the item's position is unrelated between the two spaces
+      d[r,c] <- score < 0.1
+    }
+  }
+  
+  # give the item a an overall score. There are six comparisons between embeddings. On how many of these does it distinguish?
+  overall_discrepant_items[i,] <- sum(d[lt])
+}
+
+overall_discrepant_items <- overall_discrepant_items[order(overall_discrepant_items$score), , drop = FALSE]
+
+# which items distinguish between the two semantic spaces? These are less desirable. 
+
+score <- rep(0,65)
+semantic_discrepant_items <- as.data.frame(score, row.names = stimuli)
+
+# for each item
+for (i in c(1:65)){
+  
+  # get the item's score for 
+  score <- discrepant_items[[2]][[4]][discrepant_items[[2]][[4]]$item == stimuli[i],2]
+  # ask whether the item distinguishes those two embeddings.
+  # a negative value, or one close to zero, indicates that the item's position is unrelated between the two spaces
+  semantic_discrepant_items[i,] <- score < 0.1
+  
+}
+
+# Test 4: Predict one from another ----------------------------------------
+
+# the task here is predicting triplets, so we are really testing to see whether (a)
+# the semantic embeddings are comparable, and (b) the "unimodal embeddings do
+# anywhere near as well as the "semantic" ones.
+
+# first predict held-out triplets within modality - visual triplets using visual triplet data and sound triplets using sound triplet data
+
+predictions <- list()
+predictions$image_triplet_from_image_triplet <- rep(0, times = length(image_data))
+# for each participant
+for (i in c(1:length(image_data))){
+  # predict held-out triplets
+  predictions$image_triplet_from_image_triplet[i] <- get.hoacc(embeddings$image_triplet_embedding, image_data[[i]])
+}
+mean(predictions$image_triplet_from_image_triplet)
+
+predictions$sound_triplet_from_sound_triplet <- rep(0, times = length(sound_data))
+# for each participant
+for (i in c(1:length(sound_data))){
+  # predict held-out triplets
+  predictions$sound_triplet_from_sound_triplet[i] <- get.hoacc(embeddings$sound_triplet_embedding, sound_data[[i]])
+}
+mean(predictions$sound_triplet_from_sound_triplet)
+
+# results:
+# - according to Tim on Slack, this is very par for the course with triplet embeddings. The absence of a perfect prediction
+# reflects the fact that people disagree for some of the embeddings. 
+
+# now predict triplets using the triplet data from the other modality. 
+
+predictions$image_triplet_from_sound_triplet <- rep(0, times = length(image_data))
+for (i in c(1:length(image_data))){
+  predictions$image_triplet_from_sound_triplet[i] <- get.hoacc(embeddings$sound_triplet_embedding, image_data[[i]])
+}
+mean(predictions$image_triplet_from_sound_triplet)
+
+predictions$sound_triplet_from_image_triplet <- rep(0, times = length(sound_data))
+for (i in c(1:length(sound_data))){
+  predictions$sound_triplet_from_image_triplet[i] <- get.hoacc(embeddings$image_triplet_embedding, sound_data[[i]])
+}
+mean(predictions$sound_triplet_from_image_triplet)
+
+# results:
+# - image triplets predict images well (~0.74) and sounds less well (~0.65).
+# - sounds predict sounds slightly worse (~0.63) and images essentially the same (~0.70).
+
+# now see how well the models do. Image model first (predicting images, then predicting sounds)
+
+predictions$image_triplet_from_image_model <- rep(0, times = length(image_data))
+for (i in c(1:length(image_data))){
+  predictions$image_triplet_from_image_model[i] <- get.hoacc(embeddings$image_model_embedding, image_data[[i]])
+}
+mean(predictions$image_triplet_from_image_model)
+
+predictions$sound_triplet_from_image_model <- rep(0, times = length(sound_data))
+for (i in c(1:length(sound_data))){
+  predictions$sound_triplet_from_image_model[i] <- get.hoacc(embeddings$image_model_embedding, sound_data[[i]])
+}
+mean(predictions$sound_triplet_from_image_model)
+
+# then sound model (predicting sounds, then predicting images)
+
+predictions$sound_triplet_from_sound_model <- rep(0, times = length(sound_data))
+for (i in c(1:length(sound_data))){
+  predictions$sound_triplet_from_sound_model[i] <- get.hoacc(embeddings$sound_model_embedding, sound_data[[i]])
+}
+mean(predictions$sound_triplet_from_sound_model)
+
+predictions$image_triplet_from_sound_model <- rep(0, times = length(image_data))
+for (i in c(1:length(image_data))){
+  predictions$image_triplet_from_sound_model[i] <- get.hoacc(embeddings$sound_model_embedding, image_data[[i]])
+}
+mean(predictions$image_triplet_from_sound_model)
+
+# results: all models perform approximately at chance when predicting triplets.
+
+# test to see whether triplet embeddings predict held-out triplets significantly better than model embeddings do
+
+stats <- t.test(predictions$image_triplet_from_image_triplet, predictions$image_triplet_from_image_model)
+stats$p.value
+
+stats <- t.test(predictions$sound_triplet_from_sound_triplet, predictions$sound_triplet_from_sound_model)
+stats$p.value
+
+#  results: yes, it is significant. 
+
+
+# Test 5: Predict "majority votes" ----------------------------------------
+
+# Rationale:
+# Sometimes participants disagree about which is the right answer for a triplet. Tim writes (slack):
+# "Imagine that, for all triplets, about 70% of participants agree on the "winning" candidate.
+# If you use your embedding to predict EACH INDIVIDUAL PARTICIPANT'S DECISION on the validation
+# triplets, then you can't do better than 70%, because that is the level of inter-subject
+# agreement. However, your embedding COULD in principle successfully predict which 
+# option is the majority-vote winner with 100% accuracy."
+# So inspect this for the validation triplets.
+
+# image triplets first
+v <- make.vmat(image_data)[[1]]
+validation <- test.model(embeddings$image_triplet_embedding, v)
+mean(validation$majority == validation$embeddings.image_triplet_embedding)
+
+# then sound triplets
+v <- make.vmat(sound_data)[[1]]
+validation <- test.model(embeddings$sound_triplet_embedding, v)
+mean(validation$majority == validation$embeddings.sound_triplet_embedding)
+
+# results: both predict their own data at 0.8
+
+# then each triplet predicting the other
+
+# images predicting sounds
+v <- make.vmat(sound_data)[[1]]
+validation <- test.model(embeddings$image_triplet_embedding, v)
+mean(validation$majority == validation$embeddings.image_triplet_embedding)
+
+# sounds predicting images
+v <- make.vmat(image_data)[[1]]
+validation <- test.model(embeddings$sound_triplet_embedding, v)
+mean(validation$majority == validation$embeddings.sound_triplet_embedding)
+
+# results: both predict each others' data at 0.8. 
+
+# then models predicting triplets (images, then sounds)
+
+v <- make.vmat(image_data)[[1]]
+validation <- test.model(embeddings$image_model_embedding, v)
+mean(validation$majority == validation$embeddings.image_model_embedding)
+
+v <- make.vmat(sound_data)[[1]]
+validation <- test.model(embeddings$sound_model_embedding, v)
+mean(validation$majority == validation$embeddings.sound_model_embedding)
+
+# result: sound model is reasonable (0.6), but image model drops off (0.2 - N.B. stays at 0.6 when using MoCo).  
+
+
+## rerun again with excluded items and see what happens? (after psycholinguistic variables done)

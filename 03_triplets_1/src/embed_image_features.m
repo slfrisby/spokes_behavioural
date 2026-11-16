@@ -9,20 +9,26 @@ addpath(['/group/mlr-lab/Saskia/spokes_behavioural/dependencies/WISC_MVPA/src/']
 % load features from model
 features = load([root,'/work/vision_model_features/features.txt']);
 
-% calculate RSM
+% Conduct an SVD (a "full" SVD, without 
+% specifying the number of components, explains 100% of the variance. 
 
-RSM = zeros(size(features,1), size(features,1));
+% mean-centre the features first
+m = mean(features, 1);
+features = features - m;
 
-for r = 1:size(features,1)
-    for c = 1:size(features,1)
-        RSM(r,c) = corr2(features(r,:), features(c,:));
-    end
-end
+% then do the SVD. "econ" excludes zeros and makes the computation far
+% faster while preserving all the necessary information. 
+[C, z, ~] = svd(features, "econ");
+z = diag(z);
 
-% convert RSM to embedding
-[C,z] = embed_similarity_matrix(RSM,4);
+% rescale, just as we do for usual RSL
 U = rescale_embedding(C,z);
 
-% save outputs
-writematrix(RSM,[root,'/work/image_model_RSM.txt'])
-writematrix(U,[root,'/work/image_model_embedding.txt'])
+% inspect percentage variance explained by each component
+varianceExplained = 100 * z.^2 / sum(z.^2);
+cumulativeVariance = cumsum(varianceExplained);
+plot(cumulativeVariance, 'o-');
+xlabel('Component');
+ylabel('Cumulative % variance');
+
+writematrix(U,[root,'/work/image_model_features.txt'])
